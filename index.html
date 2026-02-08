@@ -1,483 +1,498 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AGENT FORGE — Build AI Personas That Slap</title>
-  <meta name="description" content="Describe any role. Get a production-ready AI agent system prompt. Paste into Claude, ChatGPT, Cursor, or any LLM." />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕵</text></svg>" />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg: #0a0a0f;
-      --surface: #111118;
-      --surface2: #1a1a24;
-      --border: rgba(255,255,255,0.07);
-      --text: #d4d4dc;
-      --text-dim: #6a6a7a;
-      --accent: #e8f54a;
-      --accent-dim: rgba(232,245,74,0.15);
-      --red: #ff4757;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      min-height: 100vh; background: var(--bg); color: var(--text);
-      font-family: 'Outfit', sans-serif; overflow-x: hidden;
-    }
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-    body::before {
-      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.03;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    }
-    .container { position: relative; z-index: 1; max-width: 820px; margin: 0 auto; padding: 32px 20px 80px; }
-    .header { text-align: center; margin-bottom: 40px; }
-    .badge {
-      display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 11px;
-      font-family: 'Space Mono', monospace; font-weight: 700; letter-spacing: 2px;
-      background: var(--accent); color: #000; margin-bottom: 16px;
-    }
-    h1 { font-size: clamp(36px, 6vw, 56px); font-weight: 900; letter-spacing: -1px; line-height: 1.05; margin-bottom: 12px; color: #fff; }
-    h1 .accent { color: var(--accent); }
-    .tagline { font-size: 16px; color: var(--text-dim); font-weight: 400; line-height: 1.5; max-width: 500px; margin: 0 auto; }
-    .key-bar {
-      display: flex; gap: 8px; align-items: center;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 8px 12px; margin-bottom: 32px;
-    }
-    .key-bar label { font-size: 11px; font-family: 'Space Mono', monospace; color: var(--text-dim); white-space: nowrap; letter-spacing: 1px; }
-    .key-bar input {
-      flex: 1; background: none; border: none; color: var(--text); font-family: 'Space Mono', monospace;
-      font-size: 13px; outline: none; min-width: 0;
-    }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); flex-shrink: 0; transition: background 0.3s; }
-    .dot.active { background: #2ed573; }
-    .builder {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 20px; padding: 32px; margin-bottom: 24px;
-    }
-    .builder-label {
-      font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700;
-      letter-spacing: 3px; color: var(--text-dim); margin-bottom: 16px; text-transform: uppercase;
-    }
-    .role-input {
-      width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
-      border-radius: 14px; padding: 18px 20px; color: #fff; font-family: 'Outfit', sans-serif;
-      font-size: 18px; font-weight: 500; outline: none; resize: none; transition: border-color 0.2s; min-height: 64px;
-    }
-    .role-input::placeholder { color: var(--text-dim); }
-    .role-input:focus { border-color: var(--accent); }
-    .hint { font-size: 12px; color: var(--text-dim); margin-top: 10px; line-height: 1.5; }
-    .hint strong { color: var(--accent); font-weight: 600; }
-    .mod-section { margin-top: 24px; }
-    .mod-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .mod-chip {
-      padding: 7px 16px; border-radius: 20px; font-size: 13px; font-weight: 500;
-      border: 1.5px solid var(--border); background: none; color: var(--text-dim);
-      cursor: pointer; transition: all 0.2s; font-family: 'Outfit', sans-serif;
-    }
-    .mod-chip:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
-    .mod-chip.selected { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-    .generate-row { margin-top: 28px; display: flex; gap: 12px; align-items: center; }
-    .generate-btn {
-      flex: 1; padding: 16px 32px; border-radius: 14px; border: none;
-      background: var(--accent); color: #000; font-family: 'Outfit', sans-serif;
-      font-size: 16px; font-weight: 800; cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
-    }
-    .generate-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(232,245,74,0.25); }
-    .generate-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .spinner {
-      display: inline-block; width: 16px; height: 16px; border: 2.5px solid #000;
-      border-top-color: transparent; border-radius: 50%;
-      animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 8px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .surprise-btn {
-      padding: 16px 20px; border-radius: 14px; border: 1.5px solid var(--border);
-      background: none; color: var(--text-dim); font-size: 20px; cursor: pointer;
-      transition: all 0.2s; flex-shrink: 0;
-    }
-    .surprise-btn:hover { border-color: var(--accent); color: var(--accent); transform: rotate(15deg); }
-    .output-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 20px; overflow: hidden; margin-bottom: 24px;
-      animation: slideUp 0.4s ease-out;
-    }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    .output-header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 16px 24px; border-bottom: 1px solid var(--border);
-    }
-    .output-title { font-weight: 700; font-size: 14px; color: #fff; display: flex; align-items: center; gap: 8px; }
-    .tag {
-      font-size: 10px; font-family: 'Space Mono', monospace; padding: 3px 10px;
-      border-radius: 10px; background: var(--accent-dim); color: var(--accent);
-      letter-spacing: 1px; font-weight: 700;
-    }
-    .output-actions { display: flex; gap: 8px; }
-    .action-btn {
-      padding: 8px 16px; border-radius: 10px; border: 1px solid var(--border);
-      background: none; color: var(--text-dim); font-family: 'Outfit', sans-serif;
-      font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s;
-    }
-    .action-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .action-btn.copied { border-color: #2ed573; color: #2ed573; }
-    .output-body {
-      padding: 24px; font-family: 'Space Mono', monospace; font-size: 13px;
-      line-height: 1.7; color: var(--text); white-space: pre-wrap; word-break: break-word;
-      max-height: 500px; overflow-y: auto;
-    }
-    .output-meta {
-      padding: 12px 24px; border-top: 1px solid var(--border);
-      font-size: 11px; color: var(--text-dim); font-family: 'Space Mono', monospace;
-      display: flex; justify-content: space-between; letter-spacing: 0.5px;
-    }
-    .history-section { margin-top: 32px; }
-    .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 12px; }
-    .history-card {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-      padding: 16px; cursor: pointer; transition: all 0.2s;
-    }
-    .history-card:hover { border-color: rgba(255,255,255,0.15); transform: translateY(-2px); }
-    .h-role { font-weight: 700; font-size: 14px; color: #fff; margin-bottom: 6px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .h-preview { font-size: 12px; color: var(--text-dim); line-height: 1.4;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .h-tags { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
-    .h-tag {
-      font-size: 9px; padding: 2px 8px; border-radius: 8px;
-      background: var(--accent-dim); color: var(--accent);
-      font-family: 'Space Mono', monospace; font-weight: 700; letter-spacing: 0.5px;
-    }
-    .error-msg {
-      margin-top: 16px; padding: 14px 20px; border-radius: 12px;
-      background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.2);
-      color: var(--red); font-size: 13px;
-    }
-    .examples { margin-top: 48px; text-align: center; }
-    .examples .builder-label { margin-bottom: 16px; }
-    .example-strip { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-    .example-chip {
-      padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 500;
-      border: 1.5px solid var(--border); background: none; color: var(--text-dim);
-      cursor: pointer; transition: all 0.2s; font-family: 'Outfit', sans-serif;
-    }
-    .example-chip:hover { border-color: var(--accent); color: var(--accent); }
-    .footer {
-      margin-top: 64px; text-align: center; font-size: 12px; color: var(--text-dim);
-      font-family: 'Space Mono', monospace; letter-spacing: 0.5px;
-    }
-    .footer a { color: var(--accent); text-decoration: none; }
-    @media (max-width: 600px) {
-      .container { padding: 20px 16px 60px; }
-      .builder { padding: 20px; }
-      .generate-row { flex-direction: column; }
-      .surprise-btn { width: 100%; }
-      .output-header { flex-direction: column; gap: 12px; align-items: flex-start; }
-      .output-actions { width: 100%; }
-      .action-btn { flex: 1; text-align: center; }
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>COIN PARTY 🎉 Anime Worlds Casino</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎰</text></svg>"/>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&family=Bangers&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--text:#fff;--dim:rgba(255,255,255,0.5);--bg:#0a0a14}
+body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;overflow-x:hidden}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:200;background:rgba(10,10,20,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.06);padding:8px 16px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Bangers',cursive;font-size:22px;cursor:pointer;display:flex;align-items:center;gap:6px;letter-spacing:1px}
+.logo span{background:linear-gradient(135deg,#ff6b35,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.wallet{display:flex;align-items:center;gap:8px;background:rgba(255,215,0,0.1);border:2px solid rgba(255,215,0,0.25);border-radius:30px;padding:5px 14px 5px 10px}
+.wallet-amt{font-family:'Fredoka',sans-serif;font-weight:700;font-size:17px;color:#ffd700}
+.add-btn{background:linear-gradient(135deg,#ff6b35,#ff9a56);border:none;color:#fff;font-family:'Fredoka',sans-serif;font-weight:700;font-size:12px;padding:5px 10px;border-radius:14px;cursor:pointer;transition:.2s;margin-left:4px}
+.add-btn:hover{transform:scale(1.05)}
+
+/* LOBBY */
+#lobby{max-width:900px;margin:0 auto;padding:20px 16px 60px}
+.lobby-title{font-family:'Bangers',cursive;font-size:34px;text-align:center;margin-bottom:2px;letter-spacing:2px;background:linear-gradient(135deg,#ff6b35,#ffd700,#ff5ca1);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.lobby-sub{text-align:center;color:var(--dim);font-size:13px;margin-bottom:24px;font-weight:600}
+.worlds-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.world-card{border-radius:18px;padding:18px 12px;cursor:pointer;transition:.3s;border:2px solid rgba(255,255,255,0.06);text-align:center;position:relative;overflow:hidden}
+.world-card:hover{transform:translateY(-6px) scale(1.02);border-color:rgba(255,255,255,0.2);box-shadow:0 12px 40px rgba(0,0,0,0.4)}
+.world-card .wc-icon{font-size:42px;margin-bottom:6px;display:block}
+.world-card .wc-name{font-family:'Bangers',cursive;font-size:17px;letter-spacing:1px;margin-bottom:1px}
+.world-card .wc-sub{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;opacity:0.5}
+.world-card .wc-game{font-size:11px;opacity:0.4;margin-top:4px}
+
+/* GAME PAGES */
+.game-page{display:none;min-height:100vh;position:relative}
+.game-page.active{display:block;animation:fadeIn .35s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1}}
+.game-inner{max-width:600px;margin:0 auto;padding:12px 16px 80px;position:relative;z-index:2}
+.back-btn{background:rgba(255,255,255,0.08);border:none;color:#fff;font-family:'Fredoka',sans-serif;font-size:14px;font-weight:600;padding:8px 16px;border-radius:12px;cursor:pointer;margin-bottom:12px;transition:.2s;display:inline-flex;align-items:center;gap:4px}
+.back-btn:hover{background:rgba(255,255,255,0.15)}
+.game-hdr{text-align:center;margin-bottom:16px}
+.game-hdr h2{font-family:'Bangers',cursive;font-size:28px;letter-spacing:2px}
+.game-hdr p{font-size:12px;opacity:.5;margin-top:2px;font-weight:600}
+.gcard{background:rgba(0,0,0,0.3);border:2px solid rgba(255,255,255,0.06);border-radius:18px;padding:18px;margin-bottom:12px;backdrop-filter:blur(8px)}
+.gcard-t{font-family:'Fredoka',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+
+/* CONTROLS */
+.bet-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.bet-in{width:90px;padding:7px 10px;border-radius:10px;border:2px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#fff;font-family:'Fredoka',sans-serif;font-size:15px;font-weight:700;text-align:center;outline:none}
+.bet-in:focus{border-color:rgba(255,215,0,0.5)}
+.bq{padding:5px 10px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.08);background:none;color:var(--dim);font-family:'Fredoka',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:.2s}
+.bq:hover{border-color:rgba(255,215,0,0.5);color:#ffd700}
+.btn{padding:11px 26px;border-radius:14px;border:none;font-family:'Bangers',cursive;font-size:18px;letter-spacing:1px;cursor:pointer;transition:.2s;color:#fff}
+.btn:hover:not(:disabled){transform:scale(1.04);filter:brightness(1.15)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-sm{padding:8px 18px;font-size:15px;border-radius:11px}
+.res-ban{text-align:center;padding:12px;border-radius:14px;font-family:'Bangers',cursive;font-size:20px;letter-spacing:1px;margin:10px 0;animation:popIn .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{transform:scale(.8);opacity:0}to{transform:scale(1)}}
+.res-w{background:rgba(86,232,160,0.12);border:2px solid rgba(86,232,160,0.3);color:#56e8a0}
+.res-l{background:rgba(255,60,60,0.12);border:2px solid rgba(255,60,60,0.3);color:#ff5050}
+.hrow{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.hpip{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;font-family:'Fredoka',sans-serif}
+.hw{background:rgba(86,232,160,0.15);color:#56e8a0}.hl{background:rgba(255,60,60,0.15);color:#ff5050}
+
+/* PARTICLES */
+.ptc{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1}
+.pt{position:absolute;border-radius:50%;animation:ptFloat 18s infinite ease-in-out;opacity:.1}
+@keyframes ptFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-70px) scale(1.15)}}
+
+/* === CRASH / DRAGON RUSH === */
+.bg-dragon{background:linear-gradient(180deg,#1a0800 0%,#2d1500 30%,#0a0a14 100%)}
+#crashCanvas{width:100%;height:280px;border-radius:14px;background:rgba(0,0,0,.35);display:block;border:2px solid rgba(255,107,53,0.15)}
+.crash-mult{text-align:center;font-family:'Bangers',cursive;font-size:52px;letter-spacing:3px;margin:6px 0;text-shadow:0 0 30px rgba(255,107,53,0.3)}
+.crash-st{text-align:center;font-size:12px;color:var(--dim);margin-bottom:8px}
+
+/* === SLOTS / POCKET CREATURES === */
+.bg-pocket{background:linear-gradient(180deg,#1a0505 0%,#2d0a0a 30%,#0a0a14 100%)}
+.slots-wrap{background:linear-gradient(180deg,rgba(220,30,30,.12),rgba(255,255,255,.03));border:2px solid rgba(220,30,30,.2);border-radius:20px;padding:18px;text-align:center}
+.reels{display:flex;justify-content:center;gap:10px;margin:12px 0}
+.reel{width:80px;height:90px;background:rgba(0,0,0,.4);border-radius:14px;border:2px solid rgba(220,30,30,.15);display:flex;align-items:center;justify-content:center;font-size:42px}
+.reel.spin{animation:rSp .1s steps(1) infinite}
+@keyframes rSp{0%{transform:translateY(-2px)}50%{transform:translateY(2px)}}
+.pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:8px;font-size:11px;color:var(--dim)}
+.pay-grid div{padding:3px 6px;background:rgba(0,0,0,.2);border-radius:6px}
+
+/* === ROULETTE / NINJA WHEEL === */
+.bg-ninja{background:linear-gradient(180deg,#0d0a00 0%,#1a1500 30%,#0a0a14 100%)}
+.rl-wrap{position:relative;width:230px;height:230px;margin:0 auto 12px}
+.rl-wheel{width:230px;height:230px;border-radius:50%;border:5px solid rgba(255,150,0,0.25);background:conic-gradient(#c0392b 0deg 9.73deg,#2c3e50 9.73deg 19.46deg,#c0392b 19.46deg 29.19deg,#2c3e50 29.19deg 38.92deg,#c0392b 38.92deg 48.65deg,#2c3e50 48.65deg 58.38deg,#c0392b 58.38deg 68.11deg,#2c3e50 68.11deg 77.84deg,#c0392b 77.84deg 87.57deg,#2c3e50 87.57deg 97.3deg,#27ae60 97.3deg 106.03deg,#c0392b 106.03deg 115.76deg,#2c3e50 115.76deg 125.49deg,#c0392b 125.49deg 135.22deg,#2c3e50 135.22deg 144.95deg,#c0392b 144.95deg 154.68deg,#2c3e50 154.68deg 164.41deg,#c0392b 164.41deg 174.14deg,#2c3e50 174.14deg 183.87deg,#c0392b 183.87deg 193.6deg,#2c3e50 193.6deg 203.33deg,#c0392b 203.33deg 213.06deg,#2c3e50 213.06deg 222.79deg,#c0392b 222.79deg 232.52deg,#2c3e50 232.52deg 242.25deg,#c0392b 242.25deg 251.98deg,#2c3e50 251.98deg 261.71deg,#c0392b 261.71deg 271.44deg,#2c3e50 271.44deg 281.17deg,#27ae60 281.17deg 290.9deg,#c0392b 290.9deg 300.63deg,#2c3e50 300.63deg 310.36deg,#c0392b 310.36deg 320.09deg,#2c3e50 320.09deg 329.82deg,#c0392b 329.82deg 339.55deg,#2c3e50 339.55deg 349.28deg,#c0392b 349.28deg 360deg);transition:transform 4s cubic-bezier(.2,.8,.3,1);box-shadow:0 0 30px rgba(255,150,0,.2),inset 0 0 40px rgba(0,0,0,.5)}
+.rl-ptr{position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-size:22px;z-index:5}
+.rl-ctr{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:48px;height:48px;border-radius:50%;background:#0d0a00;border:2px solid rgba(255,150,0,.3);display:flex;align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:15px;z-index:3}
+.rl-bets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}
+.rb{padding:9px;border-radius:11px;border:2px solid rgba(255,255,255,.06);background:none;font-family:'Fredoka',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.2s;text-align:center}
+.rb:hover{transform:scale(1.03)}.rb.sel{border-width:3px;transform:scale(1.05)}
+.rb-r{color:#e74c3c}.rb-r.sel{border-color:#e74c3c;background:rgba(231,76,60,.1)}
+.rb-b{color:#aaa}.rb-b.sel{border-color:#aaa;background:rgba(170,170,170,.1)}
+.rb-g{color:#27ae60}.rb-g.sel{border-color:#27ae60;background:rgba(39,174,96,.1)}
+
+/* === BLACKJACK / SHADOW LEDGER === */
+.bg-shadow{background:linear-gradient(180deg,#0a0005 0%,#1a000a 30%,#0a0a14 100%)}
+.bj-tbl{background:linear-gradient(180deg,rgba(180,0,50,.1),rgba(0,0,0,.2));border:2px solid rgba(180,0,50,.2);border-radius:18px;padding:14px}
+.bj-lbl{font-family:'Fredoka',sans-serif;font-size:11px;color:var(--dim);font-weight:700;letter-spacing:1px;margin-bottom:4px}
+.bj-hand{display:flex;gap:5px;min-height:68px;flex-wrap:wrap;margin-bottom:10px}
+.bj-c{width:48px;height:66px;border-radius:8px;background:#fff;color:#1a1033;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Fredoka',sans-serif;font-weight:700;font-size:15px;box-shadow:0 3px 10px rgba(0,0,0,.3);animation:dealC .3s ease-out}
+.bj-c.red{color:#b00030}
+.bj-c.fd{background:linear-gradient(135deg,#2a0015,#1a000a);color:transparent}.bj-c.fd::after{content:'✦';position:absolute;font-size:18px;color:rgba(180,0,50,.4)}
+@keyframes dealC{from{transform:translateY(-15px) rotate(-5deg);opacity:0}to{transform:translateY(0);opacity:1}}
+.bj-sc{font-family:'Fredoka',sans-serif;font-weight:700;font-size:18px;margin-left:6px}
+.bj-div{height:1px;background:rgba(180,0,50,.15);margin:6px 0}
+.bj-acts{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+
+/* === PLINKO / PIRATE PLUNDER === */
+.bg-pirate{background:linear-gradient(180deg,#00080f 0%,#001525 30%,#0a0a14 100%)}
+#plinkoCanvas{width:100%;height:380px;display:block;border-radius:14px;background:rgba(0,0,0,.35);border:2px solid rgba(0,150,255,0.12)}
+
+/* === MINES / TITAN FIELD === */
+.bg-titan{background:linear-gradient(180deg,#0a0800 0%,#1a1505 30%,#0a0a14 100%)}
+.mines-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;max-width:300px;margin:0 auto}
+.mine-cell{aspect-ratio:1;border-radius:10px;background:rgba(120,100,60,.12);border:2px solid rgba(120,100,60,.2);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;transition:.2s;font-family:'Fredoka',sans-serif;font-weight:700}
+.mine-cell:hover:not(.rv){background:rgba(120,100,60,.25);transform:scale(1.05)}
+.mine-cell.rv{cursor:default}
+.mine-cell.gem{background:rgba(0,200,100,.12);border-color:rgba(0,200,100,.35)}
+.mine-cell.bomb{background:rgba(255,50,50,.12);border-color:rgba(255,50,50,.35)}
+.mines-info{text-align:center;font-family:'Bangers',cursive;font-size:22px;letter-spacing:1px;margin:8px 0}
+
+/* === DICE / BREATH DICE === */
+.bg-breath{background:linear-gradient(180deg,#050a10 0%,#0a1a2a 30%,#0a0a14 100%)}
+.dice-num{font-family:'Bangers',cursive;font-size:60px;text-align:center;letter-spacing:3px;text-shadow:0 0 20px rgba(0,200,200,.3)}
+.dice-slider{width:100%;-webkit-appearance:none;height:8px;border-radius:4px;background:linear-gradient(90deg,#00cccc 0%,#00cccc 50%,#ff5050 50%,#ff5050 100%);outline:none;margin:12px 0}
+.dice-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.dice-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--dim)}
+.dc-row{display:flex;gap:8px;justify-content:center;margin:10px 0}
+.dc{padding:9px 18px;border-radius:11px;border:2px solid rgba(255,255,255,.08);background:none;font-family:'Fredoka',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.2s}
+.dc:hover{transform:scale(1.03)}.dc.sel{border-width:3px}
+.dc-o{color:#00cccc}.dc-o.sel{border-color:#00cccc;background:rgba(0,200,200,.1)}
+.dc-u{color:#ff5050}.dc-u.sel{border-color:#ff5050;background:rgba(255,80,80,.1)}
+
+/* === TOWER / HERO TOWER === */
+.bg-hero{background:linear-gradient(180deg,#0a0510 0%,#150a25 30%,#0a0a14 100%)}
+.tower-grid{display:flex;flex-direction:column-reverse;gap:5px;max-width:380px;margin:0 auto}
+.tower-floor{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.tower-door{padding:14px;border-radius:11px;background:rgba(100,50,200,.08);border:2px solid rgba(100,50,200,.15);text-align:center;font-size:18px;cursor:pointer;transition:.2s;font-family:'Fredoka',sans-serif;font-weight:700}
+.tower-door:hover:not(.rv){background:rgba(100,50,200,.18);transform:scale(1.03)}
+.tower-door.rv{cursor:default}
+.tower-door.safe{background:rgba(255,215,0,.12);border-color:rgba(255,215,0,.35)}
+.tower-door.trap{background:rgba(255,50,50,.12);border-color:rgba(255,50,50,.35)}
+.tower-door.cur{border-color:rgba(100,50,200,.5);box-shadow:0 0 10px rgba(100,50,200,.2)}
+.tower-info{text-align:center;font-family:'Bangers',cursive;font-size:22px;letter-spacing:1px;margin:8px 0}
+.tfl{font-size:10px;color:var(--dim);text-align:center;margin-bottom:2px;font-weight:700}
+
+/* === FLIP / FATE DUEL === */
+.bg-fate{background:linear-gradient(180deg,#0a0515 0%,#1a0a30 30%,#0a0a14 100%)}
+.flip-coin{width:130px;height:130px;margin:16px auto;perspective:600px}
+.flip-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .8s ease}
+.flip-inner.flipping{animation:cFlip .8s ease}
+@keyframes cFlip{0%{transform:rotateY(0)}100%{transform:rotateY(1800deg)}}
+.flip-face{position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:54px;backface-visibility:hidden;border:3px solid rgba(255,255,255,.15);box-shadow:0 6px 25px rgba(0,0,0,.3)}
+.flip-heads{background:linear-gradient(135deg,#ffd700,#b8860b)}
+.flip-tails{background:linear-gradient(135deg,#6a0dad,#2d0050);transform:rotateY(180deg)}
+.fc-row{display:flex;gap:8px;justify-content:center;margin:10px 0}
+.fc{padding:10px 22px;border-radius:12px;border:2px solid rgba(255,255,255,.08);background:none;font-family:'Bangers',cursive;font-size:16px;letter-spacing:1px;cursor:pointer;transition:.2s}
+.fc:hover{transform:scale(1.03)}.fc.sel{border-width:3px}
+.fc-h{color:#ffd700}.fc-h.sel{border-color:#ffd700;background:rgba(255,215,0,.1)}
+.fc-t{color:#9b59b6}.fc-t.sel{border-color:#9b59b6;background:rgba(155,89,182,.1)}
+
+/* CONFETTI & TOAST */
+.conf-wrap{position:fixed;inset:0;pointer-events:none;z-index:9999}
+.conf{position:absolute;width:8px;height:8px;border-radius:2px;animation:confF 1.5s ease-out forwards}
+@keyframes confF{0%{transform:translateY(-20px) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:14px;font-family:'Bangers',cursive;font-size:16px;letter-spacing:1px;z-index:9999;animation:toastIn .3s ease;white-space:nowrap;color:#fff}
+@keyframes toastIn{from{transform:translateX(-50%) translateY(20px);opacity:0}to{transform:translateX(-50%);opacity:1}}
+
+@media(max-width:500px){.worlds-grid{gap:8px}.world-card{padding:12px 8px}.world-card .wc-icon{font-size:32px}.world-card .wc-name{font-size:14px}.reel{width:64px;height:76px;font-size:36px}.crash-mult{font-size:40px}.rl-wrap,.rl-wheel{width:200px;height:200px}.bj-c{width:42px;height:58px;font-size:13px}#plinkoCanvas{height:300px}.mine-cell{font-size:16px}.dice-num{font-size:44px}.flip-coin{width:100px;height:100px}.flip-face{font-size:40px}}
+</style>
 </head>
 <body>
 
-<div class="container">
-  <div class="header">
-    <div class="badge">FREE TOOL</div>
-    <h1>Build AI agents<br>that <span class="accent">actually work</span></h1>
-    <p class="tagline">Describe any role. Get a production-ready system prompt you can paste into Claude, ChatGPT, Cursor, or any LLM.</p>
-  </div>
+<div class="topbar">
+  <div class="logo" onclick="goLobby()">⚔️ <span>COIN PARTY</span></div>
+  <div class="wallet"><span style="font-size:18px">🪙</span><div class="wallet-amt" id="bal">10,000</div><button class="add-btn" onclick="addCoins()">+ FREE</button></div>
+</div>
 
-  <div class="key-bar">
-    <span class="dot" id="keyDot"></span>
-    <label>API KEY</label>
-    <input type="password" id="keyInput" placeholder="sk-ant-api03-..." />
-  </div>
-
-  <div class="builder">
-    <div class="builder-label">01 — Describe the role</div>
-    <textarea class="role-input" id="roleInput" placeholder="Gordon Ramsay but he reviews your code instead of food..." rows="2"></textarea>
-    <p class="hint">Be specific or be weird. <strong>"Sarcastic K8s expert who uses cooking metaphors"</strong> works better than <strong>"tech helper"</strong></p>
-
-    <div class="mod-section">
-      <div class="builder-label">02 — Pick a vibe <span style="opacity:0.5">(optional)</span></div>
-      <div class="mod-row" id="toneChips">
-        <button class="mod-chip" data-val="Professional">Professional</button>
-        <button class="mod-chip" data-val="Friendly">Friendly</button>
-        <button class="mod-chip" data-val="Sarcastic">Sarcastic</button>
-        <button class="mod-chip" data-val="Brutally honest">Brutally honest</button>
-        <button class="mod-chip" data-val="Encouraging">Encouraging</button>
-        <button class="mod-chip" data-val="Chaotic">Chaotic</button>
-        <button class="mod-chip" data-val="Deadpan">Deadpan</button>
-        <button class="mod-chip" data-val="Wise mentor">Wise mentor</button>
-      </div>
-    </div>
-
-    <div class="mod-section">
-      <div class="builder-label">03 — Expertise level <span style="opacity:0.5">(optional)</span></div>
-      <div class="mod-row" id="expertChips">
-        <button class="mod-chip" data-val="Beginner-friendly">Beginner-friendly</button>
-        <button class="mod-chip" data-val="Intermediate">Intermediate</button>
-        <button class="mod-chip" data-val="Expert-level">Expert-level</button>
-        <button class="mod-chip" data-val="Talks to you like a 5-year-old">ELI5</button>
-      </div>
-    </div>
-
-    <div class="mod-section">
-      <div class="builder-label">04 — Agent superpowers <span style="opacity:0.5">(optional)</span></div>
-      <div class="mod-row" id="powerChips">
-        <button class="mod-chip" data-val="Step-by-step thinker">Step-by-step</button>
-        <button class="mod-chip" data-val="Asks clarifying questions first">Asks questions</button>
-        <button class="mod-chip" data-val="Gives concrete examples">Gives examples</button>
-        <button class="mod-chip" data-val="Challenges your assumptions">Challenges you</button>
-        <button class="mod-chip" data-val="Uses analogies and metaphors">Uses analogies</button>
-        <button class="mod-chip" data-val="Cites sources and references">Cites sources</button>
-        <button class="mod-chip" data-val="Keeps responses concise and punchy">Concise</button>
-        <button class="mod-chip" data-val="Thinks out loud showing reasoning">Thinks aloud</button>
-      </div>
-    </div>
-
-    <div class="generate-row">
-      <button class="generate-btn" id="generateBtn" onclick="generate()" disabled>FORGE AGENT →</button>
-      <button class="surprise-btn" onclick="surpriseMe()" title="Surprise me">🎲</button>
-    </div>
-    <div id="errorBox" class="error-msg" style="display:none"></div>
-  </div>
-
-  <div id="outputSection" style="display:none">
-    <div class="output-card">
-      <div class="output-header">
-        <div class="output-title">
-          <span id="outputName">Agent</span>
-          <span class="tag">SYSTEM PROMPT</span>
-        </div>
-        <div class="output-actions">
-          <button class="action-btn" id="copyBtn" onclick="copyPrompt()">📋 Copy</button>
-          <button class="action-btn" onclick="downloadPrompt()">↓ Download</button>
-          <button class="action-btn" id="shareBtn" onclick="sharePrompt()">Share</button>
-        </div>
-      </div>
-      <div class="output-body" id="outputBody"></div>
-      <div class="output-meta">
-        <span id="outputTokens">~0 tokens</span>
-        <span id="outputDate"></span>
-      </div>
-    </div>
-  </div>
-
-  <div class="history-section" id="historySection" style="display:none">
-    <div class="builder-label">YOUR AGENTS</div>
-    <div class="history-grid" id="historyGrid"></div>
-  </div>
-
-  <div class="examples">
-    <div class="builder-label">TRY THESE</div>
-    <div class="example-strip" id="exampleStrip"></div>
-  </div>
-
-  <div class="footer">
-    Built with Claude API · Your key stays in your browser · <a href="https://console.anthropic.com" target="_blank">Get an API key</a>
+<div id="lobby">
+  <div class="lobby-title">⚔️ CHOOSE YOUR REALM</div>
+  <div class="lobby-sub">9 Anime-Inspired Worlds • Play Money Casino</div>
+  <div class="worlds-grid">
+    <div class="world-card" onclick="go('crash')" style="background:linear-gradient(135deg,#2d1500,#1a0800);border-color:rgba(255,107,53,.2)"><span class="wc-icon">🐉</span><div class="wc-name" style="color:#ff6b35">DRAGON RUSH</div><div class="wc-sub">Power Level Rising</div><div class="wc-game">Crash Game</div></div>
+    <div class="world-card" onclick="go('slots')" style="background:linear-gradient(135deg,#2d0a0a,#1a0505);border-color:rgba(220,30,30,.2)"><span class="wc-icon">🔮</span><div class="wc-name" style="color:#dc1e1e">POCKET CREATURES</div><div class="wc-sub">Catch Rare Ones</div><div class="wc-game">Slots</div></div>
+    <div class="world-card" onclick="go('roulette')" style="background:linear-gradient(135deg,#1a1500,#0d0a00);border-color:rgba(255,150,0,.2)"><span class="wc-icon">🍥</span><div class="wc-name" style="color:#ff9600">NINJA WHEEL</div><div class="wc-sub">Wheel of Jutsu</div><div class="wc-game">Roulette</div></div>
+    <div class="world-card" onclick="go('blackjack')" style="background:linear-gradient(135deg,#1a000a,#0a0005);border-color:rgba(180,0,50,.2)"><span class="wc-icon">📓</span><div class="wc-name" style="color:#b40032">SHADOW LEDGER</div><div class="wc-sub">Write Your Fate</div><div class="wc-game">Blackjack</div></div>
+    <div class="world-card" onclick="go('plinko')" style="background:linear-gradient(135deg,#001525,#00080f);border-color:rgba(0,150,255,.2)"><span class="wc-icon">🏴‍☠️</span><div class="wc-name" style="color:#0096ff">PIRATE PLUNDER</div><div class="wc-sub">Treasure of the Sea</div><div class="wc-game">Plinko</div></div>
+    <div class="world-card" onclick="go('mines')" style="background:linear-gradient(135deg,#1a1505,#0a0800);border-color:rgba(120,100,60,.2)"><span class="wc-icon">⚔️</span><div class="wc-name" style="color:#8c7a3c">TITAN FIELD</div><div class="wc-sub">Beyond the Walls</div><div class="wc-game">Mines</div></div>
+    <div class="world-card" onclick="go('dice')" style="background:linear-gradient(135deg,#0a1a2a,#050a10);border-color:rgba(0,200,200,.2)"><span class="wc-icon">🌊</span><div class="wc-name" style="color:#00cccc">BREATH DICE</div><div class="wc-sub">Breathing Forms</div><div class="wc-game">Dice</div></div>
+    <div class="world-card" onclick="go('tower')" style="background:linear-gradient(135deg,#150a25,#0a0510);border-color:rgba(100,50,200,.2)"><span class="wc-icon">🦸</span><div class="wc-name" style="color:#6432c8">HERO TOWER</div><div class="wc-sub">Go Beyond Plus Ultra</div><div class="wc-game">Tower</div></div>
+    <div class="world-card" onclick="go('flip')" style="background:linear-gradient(135deg,#1a0a30,#0a0515);border-color:rgba(155,89,182,.2)"><span class="wc-icon">🃏</span><div class="wc-name" style="color:#9b59b6">FATE DUEL</div><div class="wc-sub">Flip Your Destiny</div><div class="wc-game">Coin Flip</div></div>
   </div>
 </div>
 
+<!-- ===== DRAGON RUSH (Crash) ===== -->
+<div class="game-page bg-dragon" id="pg-crash">
+  <div class="ptc" id="pt-crash"></div>
+  <div class="game-inner">
+    <button class="back-btn" onclick="goLobby()">← Realms</button>
+    <div class="game-hdr"><h2 style="color:#ff6b35">🐉 DRAGON RUSH</h2><p>Your power level is rising... cash out before you overload!</p></div>
+    <div class="gcard"><canvas id="crashCanvas"></canvas><div class="crash-mult" id="cMult" style="color:#ff6b35">1.00×</div><div class="crash-st" id="cSt">Channel your energy and launch!</div><div id="cRes"></div></div>
+    <div class="gcard"><div class="gcard-t">⚡ Power Bet</div><div class="bet-row"><input class="bet-in" type="number" id="cBet" value="100" min="10"/><button class="bq" onclick="sb('cBet',50)">50</button><button class="bq" onclick="sb('cBet',100)">100</button><button class="bq" onclick="sb('cBet',500)">500</button><button class="bq" onclick="sb('cBet','h')">½</button><button class="bq" onclick="sb('cBet','m')">MAX</button></div><div style="text-align:center;margin-top:10px"><button class="btn" id="cStartBtn" onclick="cStart()" style="background:linear-gradient(135deg,#ff6b35,#ff9a56)">🐉 POWER UP!</button><button class="btn" id="cCashBtn" onclick="cCash()" style="display:none;background:linear-gradient(135deg,#ffd700,#ffaa00)">⚡ CASH OUT!</button></div></div>
+    <div class="gcard"><div class="gcard-t">📊 Battle Log</div><div class="hrow" id="cH"></div></div>
+  </div>
+</div>
+
+<!-- ===== POCKET CREATURES (Slots) ===== -->
+<div class="game-page bg-pocket" id="pg-slots">
+  <div class="ptc" id="pt-slots"></div>
+  <div class="game-inner">
+    <button class="back-btn" onclick="goLobby()">← Realms</button>
+    <div class="game-hdr"><h2 style="color:#dc1e1e">🔮 POCKET CREATURES</h2><p>Spin to catch wild creatures!</p></div>
+    <div class="gcard"><div class="slots-wrap"><div style="font-family:'Bangers',cursive;font-size:20px;letter-spacing:1px;color:#dc1e1e;margin-bottom:4px">CREATURE CATCHER</div><div class="reels"><div class="reel" id="s0">🐲</div><div class="reel" id="s1">⚡</div><div class="reel" id="s2">🔥</div></div><div id="sRes"></div></div><div class="pay-grid"><div>🌟🌟🌟 ×20 Legendary</div><div>🐲🐲🐲 ×15 Dragon</div><div>⚡⚡⚡ ×10 Thunder</div><div>🔥🔥🔥 ×5 Fire</div><div>🌿🌿🌿 ×4 Grass</div><div>💧💧💧 ×3 Water</div><div>🪨🪨🪨 ×3 Rock</div><div>2 match ×1.5</div></div></div>
+    <div class="gcard"><div class="gcard-t">🔮 Bet</div><div class="bet-row"><input class="bet-in" type="number" id="sBet" value="100" min="10"/><button class="bq" onclick="sb('sBet',50)">50</button><button class="bq" onclick="sb('sBet',100)">100</button><button class="bq" onclick="sb('sBet',500)">500</button><button class="bq" onclick="sb('sBet','h')">½</button><button class="bq" onclick="sb('sBet','m')">MAX</button></div><div style="text-align:center;margin-top:10px"><button class="btn" id="sBtn" onclick="sSpin()" style="background:linear-gradient(135deg,#dc1e1e,#ff4444)">🔮 CATCH!</button></div></div>
+    <div class="gcard"><div class="gcard-t">📊 Pokédex Log</div><div class="hrow" id="sH"></div></div>
+  </div>
+</div>
+
+<!-- ===== NINJA WHEEL (Roulette) ===== -->
+<div class="game-page bg-ninja" id="pg-roulette">
+  <div class="ptc" id="pt-roulette"></div>
+  <div class="game-inner">
+    <button class="back-btn" onclick="goLobby()">← Realms</button>
+    <div class="game-hdr"><h2 style="color:#ff9600">🍥 NINJA WHEEL</h2><p>Spin the wheel of jutsu — believe it!</p></div>
+    <div class="gcard"><div class="rl-wrap"><div class="rl-ptr">🔻</div><div class="rl-wheel" id="rW"></div><div class="rl-ctr" id="rN">?</div></div><div id="rRes"></div></div>
+    <div class="gcard"><div class="gcard-t">🎯 Jutsu Style</div><div class="rl-bets"><button class="rb rb-r" onclick="rSel('red',this)">🔴 Fire ×2</button><button class="rb rb-g" onclick="rSel('green',this)">🟢 Wind ×14</button><button class="rb rb-b" onclick="rSel('black',this)">⚫ Shadow ×2</button></div></div>
+    <div class="gcard"><div class="gcard-t">💰 Bet</div><div class="bet-row"><input class="bet-in" type="number" id="rBet" value="100" min="10"/><button class="bq" onclick="sb('rBet',50)">50</button><button class="bq" onclick="sb('rBet',100)">100</button><button class="bq" onclick="sb('rBet',500)">500</button><button class="bq" onclick="sb('rBet','h')">½</button><button class="bq" onclick="sb('rBet','m')">MAX</button></div><div style="text-align:center;margin-top:10px"><button class="btn" id="rBtn" onclick="rSpin()" style="background:linear-gradient(135deg,#ff9600,#ffb84d)">🍥 SPIN!</button></div></div>
+    <div class="gcard"><div class="gcard-t">📊 Mission Log</div><div class="hrow" id="rH"></div></div>
+  </div>
+</div>
+
+<!-- ===== SHADOW LEDGER (Blackjack) ===== -->
+<div class="game-page bg-shadow" id="pg-blackjack">
+  <div class="ptc" id="pt-bj"></div>
+  <div class="game-inner">
+    <button class="back-btn" onclick="goLobby()">← Realms</button>
+    <div class="game-hdr"><h2 style="color:#b40032">📓 SHADOW LEDGER</h2><p>Write the dealer's name in the ledger...</p></div>
+    <div class="gcard"><div class="bj-tbl"><div class="bj-lbl">SHINIGAMI <span class="bj-sc" id="dSc"></span></div><div class="bj-hand" id="dH"></div><div class="bj-div"></div><div class="bj-lbl">YOU <span class="bj-sc" id="pSc"></span></div><div class="bj-hand" id="pH"></div></div><div id="bjRes"></div><div class="bj-acts" id="bjA" style="display:none"><button class="btn btn-sm" onclick="bjHit()" style="background:linear-gradient(135deg,#b40032,#e00040)">📓 DRAW</button><button class="btn btn-sm" onclick="bjStand()" style="background:linear-gradient(135deg,#555,#888)">✋ HOLD</button><button class="btn btn-sm" id="bjDb" onclick="bjDbl()" style="background:linear-gradient(135deg,#8b0000,#b40032)">💀 DOUBLE</button></div></div>
+    <div class="gcard"><div class="gcard-t">💰 Bet</div><div class="bet-row"><input class="bet-in" type="number" id="bjBet" value="100" min="10"/><button class="bq" onclick="sb('bjBet',50)">50</button><button class="bq" onclick="sb('bjBet',100)">100</button><button class="bq" onclick="sb('bjBet',500)">500</button><button class="bq" onclick="sb('bjBet','h')">½</button><button class="bq" onclick="sb('bjBet','m')">MAX</button></div><div style="text-align:center;margin-top:10px"><button class="btn btn-sm" id="bjDBtn" onclick="bjDeal()" style="background:linear-gradient(135deg,#b40032,#e00040)">📓 DEAL</button></div></div>
+    <div class="gcard"><div class="gcard-t">📊 Death Log</div><div class="hrow" id="bjH"></div></div>
+  </div>
+</div>
+
+<!-- ===== PIRATE PLUNDER (Plinko) ===== -->
+<div class="game-page bg-pirate" id="pg-plinko">
+  <div class="ptc" id="pt-pl"></div>
+  <div class="game-inner">
+    <button class="back-btn" onclick="goLobby()">← Realms</button>
+    <div class="game-hdr"><h2 style="color:#0096ff">🏴‍☠️ PIRATE PLUNDER</h2><p>Drop the treasure through the reef!</p></div>
+    <div class="gcard"><canvas id="plinkoCanvas"></canvas><div id="plRes"></div></div>
+    <div class="gcard"><div class="gcard-t">💰 Treasure Bet</div><div class="bet-row"><input class="bet-in" type="number" id="plBet" value="100" min="10"/><button class="bq" onclick="sb('plBet',50)">50</button><button class="bq" onclick="sb('plBet',100)">100</button><button class="bq" onclick="sb('plBet',500)">500</button><button class="bq" onclick="sb('plBet','h')">½</button><button class="bq" onclick="sb('plBet','m')">MAX</button></div><div style="text-align:center;margin-top:10px"><button class="btn" id="plBtn" onclick="plDrop()" style="background:linear-gradient(135deg,#0096ff,#40b0ff)">🏴‍☠️ DROP!</button></div></div>
+    <div class="gcard"><div class="gcard-t">📊 Treasure Log</div><div class="hrow" id="plH"></div></div>
+  </div>
+</div>
+
+<!-- ===== TITAN FIELD (Mines) ===== -->
+<div class="game-page bg-titan" id="pg-mines">
+  <div class="ptc" id="pt-mn"></div>
+  <div class="game-inner">
+    <button class="back-btn" onclick="goLobby()">← Realms</button>
+    <div class="game-hdr"><h2 style="color:#8c7a3c">⚔️ TITAN FIELD</h2><p>Scout beyond the walls — avoid the Titans</p></div>
+    <div class="gcard"><div class="mines-info" id="mInfo">Scout the field for supplies! ⚔️</div><div class="mines-grid" id="mGrid"></div><div id="mRes"></div><div style="text-align:center;margin-top:8px"><button class="btn btn-sm" id="mCashBtn" onclick="mCash()" style="display:none;background:linear-gradient(135deg,#8c7a3c,#b8a050)">🏰 Retreat & Cash Out</button></div></div>
+    <div class="gcard"><div class="gcard-t">👹 Titans hidden</div><div class="bet-row" style="margin-bottom:6px"><button class="bq" onclick="setMn(3)" id="mb3" style="border-color:#8c7a3c;color:#8c7a3c">3</button><button class="bq" onclick="setMn(5)" id="mb5">5</button><button class="bq" onclick="setMn(7)" id="mb7">7</button><button class="bq" onclick="setMn(10)" id="mb10">10</button></div><div class="gcard-t">💰 Bet</div><div class="bet-row"><input class="bet-in" type="number" id="mBet" value="100" min="10"/><button class="bq" onclick="sb('mBet',50)">50</button><button class="bq" onclick="sb('mBet',100)">100</button><button class="bq" onclick="sb('mBet',500)">500</button><button class="bq" onclick="sb('mBet','h')">½</button><button class="bq" onclick="sb('mBet','m')">MAX</button></div><div style="text-align:center;margin-top:8px"><button class="btn btn-sm" id="mSBtn" onclick="mStart()" style="background:linear-gradient(135deg,#8c7a3c,#b8a050)">⚔️ SCOUT!</button></div></div>
+    <div class="gcard"><div class="gcard-t">📊 Expedition Log</div><div class="hrow" id="mH"></div></div>
+  </div>
+</div>
+
+<!-- ===== BREATH DICE (Dice) ===== -->
+<div class="game-page bg-breath" id="pg-dice">
+  <div class="ptc" id="pt-dc"></div>
+  <div class="game-inner">
+    <button class="back-btn" onclick="goLobby()">← Realms</button>
+    <div class="game-hdr"><h2 style="color:#00cccc">🌊 BREATH DICE</h2><p>Focus your breathing form — roll the dice</p></div>
+    <div class="gcard"><div class="dice-num" id="dNum" style="color:#00cccc">?</div><div style="padding:0 10px"><input type="range" class="dice-slider" id="dSlider" min="5" max="95" value="50" oninput="dUpd()"/><div class="dice-labels"><span>Safe</span><span id="dTgt">50</span><span>Risky</span></div></div><div class="dc-row"><button class="dc dc-u" onclick="dSel('under',this)">⬇ Water</button><button class="dc dc-o sel" onclick="dSel('over',this)">⬆ Flame</button></div><div style="text-align:center;font-size:13px;color:var(--dim)" id="dOdds">×2.00 • 50% chance</div><div id="dRes"></div></div>
+    <div class="gcard"><div class="gcard-t">💰 Bet</div><div class="bet-row"><input class="bet-in" type="number" id="dBet" value="100" min="10"/><button class="bq" onclick="sb('dBet',50)">50</button><button class="bq" onclick="sb('dBet',100)">100</button><button class="bq" onclick="sb('dBet',500)">500</button><button class="bq" onclick="sb('dBet','h')">½</button><button class="bq" onclick="sb('dBet','m')">MAX</button></div><div style="text-align:center;margin-top:10px"><button class="btn" id="dBtn" onclick="dRoll()" style="background:linear-gradient(135deg,#00cccc,#40e0e0)">🌊 BREATHE!</button></div></div>
+    <div class="gcard"><div class="gcard-t">📊 Form Log</div><div class="hrow" id="dH"></div></div>
+  </div>
+</div>
+
+<!-- ===== HERO TOWER (Tower) ===== -->
+<div class="game-page bg-hero" id="pg-tower">
+  <div class="ptc" id="pt-tw"></div>
+  <div class="game-inner">
+    <button class="back-btn" onclick="goLobby()">← Realms</button>
+    <div class="game-hdr"><h2 style="color:#6432c8">🦸 HERO TOWER</h2><p>Climb the floors — go beyond, PLUS ULTRA!</p></div>
+    <div class="gcard"><div class="tower-info" id="tInfo">Choose your door, hero! 🦸</div><div class="tower-grid" id="tGrid"></div><div id="tRes"></div><div style="text-align:center;margin-top:8px"><button class="btn btn-sm" id="tCashBtn" onclick="tCash()" style="display:none;background:linear-gradient(135deg,#ffd700,#ffaa00)">🏆 Claim Victory</button></div></div>
+    <div class="gcard"><div class="gcard-t">💰 Bet</div><div class="bet-row"><input class="bet-in" type="number" id="tBet" value="100" min="10"/><button class="bq" onclick="sb('tBet',50)">50</button><button class="bq" onclick="sb('tBet',100)">100</button><button class="bq" onclick="sb('tBet',500)">500</button><button class="bq" onclick="sb('tBet','h')">½</button><button class="bq" onclick="sb('tBet','m')">MAX</button></div><div style="text-align:center;margin-top:8px"><button class="btn btn-sm" id="tSBtn" onclick="tStart()" style="background:linear-gradient(135deg,#6432c8,#8050e0)">🦸 GO BEYOND!</button></div></div>
+    <div class="gcard"><div class="gcard-t">📊 Hero Log</div><div class="hrow" id="tH"></div></div>
+  </div>
+</div>
+
+<!-- ===== FATE DUEL (Flip) ===== -->
+<div class="game-page bg-fate" id="pg-flip">
+  <div class="ptc" id="pt-fl"></div>
+  <div class="game-inner">
+    <button class="back-btn" onclick="goLobby()">← Realms</button>
+    <div class="game-hdr"><h2 style="color:#9b59b6">🃏 FATE DUEL</h2><p>Activate your trap card — flip destiny!</p></div>
+    <div class="gcard"><div class="flip-coin"><div class="flip-inner" id="fInner"><div class="flip-face flip-heads">👑</div><div class="flip-face flip-tails">💀</div></div></div><div class="fc-row"><button class="fc fc-h" onclick="fSel('heads',this)">👑 Light</button><button class="fc fc-t" onclick="fSel('tails',this)">💀 Dark</button></div><div id="fRes"></div></div>
+    <div class="gcard"><div class="gcard-t">💰 Bet</div><div class="bet-row"><input class="bet-in" type="number" id="fBet" value="100" min="10"/><button class="bq" onclick="sb('fBet',50)">50</button><button class="bq" onclick="sb('fBet',100)">100</button><button class="bq" onclick="sb('fBet',500)">500</button><button class="bq" onclick="sb('fBet','h')">½</button><button class="bq" onclick="sb('fBet','m')">MAX</button></div><div style="text-align:center;margin-top:10px"><button class="btn" id="fBtn" onclick="fFlip()" style="background:linear-gradient(135deg,#9b59b6,#c77dff)">🃏 DUEL!</button></div></div>
+    <div class="gcard"><div class="gcard-t">📊 Duel Log</div><div class="hrow" id="fH"></div></div>
+  </div>
+</div>
+
+<div class="conf-wrap" id="confW"></div>
+
 <script>
-let apiKey = "", selectedTone = [], selectedExpert = [], selectedPowers = [];
-let currentPrompt = "", currentRole = "", history = [], isGenerating = false;
+let B=10000;
+function uB(a){B+=a;if(B<0)B=0;document.getElementById('bal').textContent=B.toLocaleString();try{localStorage.setItem('cp3',B)}catch(e){}}
+function addCoins(){uB(5000);toast('🎁 +5,000 coins!','#ff6b35')}
+function sb(id,v){const i=document.getElementById(id);if(v==='h')i.value=Math.max(10,~~(parseInt(i.value)/2));else if(v==='m')i.value=Math.min(B,10000);else i.value=v}
+function gb(id){const v=parseInt(document.getElementById(id).value)||0;if(v<10){toast('⚠️ Min 10','#ff5050');return 0}if(v>B){toast('⚠️ Not enough!','#ff5050');return 0}return v}
+function go(g){document.getElementById('lobby').style.display='none';document.querySelectorAll('.game-page').forEach(p=>p.classList.remove('active'));document.getElementById('pg-'+g).classList.add('active');window.scrollTo(0,0);if(g==='plinko')plRz();if(g==='crash')crRz()}
+function goLobby(){document.querySelectorAll('.game-page').forEach(p=>p.classList.remove('active'));document.getElementById('lobby').style.display='';window.scrollTo(0,0)}
+const H={};
+function aH(g,w,l){if(!H[g])H[g]=[];H[g].unshift({w,l});if(H[g].length>20)H[g].pop();const e=document.getElementById(g+'H');if(e)e.innerHTML=H[g].map(x=>`<div class="hpip ${x.w?'hw':'hl'}">${x.l}</div>`).join('')}
+function toast(m,c){const t=document.createElement('div');t.className='toast';t.style.background=c||'#9b59b6';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2000)}
+function conf(){const c=document.getElementById('confW'),cols=['#ff6b35','#ffd700','#dc1e1e','#ff9600','#0096ff','#00cccc','#6432c8','#9b59b6','#b40032'];for(let i=0;i<40;i++){const p=document.createElement('div');p.className='conf';p.style.left=Math.random()*100+'vw';p.style.background=cols[~~(Math.random()*cols.length)];p.style.animationDelay=Math.random()*.5+'s';c.appendChild(p)}setTimeout(()=>c.innerHTML='',2500)}
+function sR(el,w,m){document.getElementById(el).innerHTML=`<div class="res-ban ${w?'res-w':'res-l'}">${m}</div>`;setTimeout(()=>{const e=document.getElementById(el);if(e)e.innerHTML=''},4000)}
+function mkP(id,colors){const c=document.getElementById(id);if(!c)return;for(let i=0;i<8;i++){const b=document.createElement('div');b.className='pt';const sz=50+Math.random()*180;b.style.width=sz+'px';b.style.height=sz+'px';b.style.left=Math.random()*100+'%';b.style.top=Math.random()*100+'%';b.style.background=colors[~~(Math.random()*colors.length)];b.style.animationDelay=Math.random()*15+'s';b.style.animationDuration=(12+Math.random()*12)+'s';c.appendChild(b)}}
 
-const SURPRISES = [
-  "Gordon Ramsay but he reviews pull requests instead of food",
-  "A pirate captain who teaches personal finance",
-  "A 1920s noir detective who debugs CSS",
-  "David Attenborough narrating someone's daily standup",
-  "A passive-aggressive IKEA instruction manual writer",
-  "A therapist for burned-out founders who speaks in sailing metaphors",
-  "An alien anthropologist studying human Slack channels",
-  "A medieval court jester doing quarterly business reviews",
-  "A strict Italian grandmother who teaches machine learning",
-  "Werner Herzog reviewing your Figma designs",
-  "A surfer bro who explains constitutional law",
-  "Shakespeare but he writes API documentation",
-  "A zen monk who does aggressive code reviews",
-  "A conspiracy theorist who's actually right about your tech debt",
-  "A dog who learned to type and now does project management",
-  "A retired spy who now teaches Excel formulas",
-  "An overly enthusiastic camp counselor who does performance reviews",
-  "A grumpy librarian who helps you organize your codebase",
-  "A motivational speaker from the future warning about bad git commits",
-  "A Victorian-era butler who manages your Jira board",
-];
-
-const EXAMPLES = [
-  "Sarcastic code reviewer", "Empathetic therapist", "Blunt startup advisor",
-  "Patient math tutor", "Strict fitness coach", "Chill travel guide",
-  "Meme-lord social media manager", "Paranoid security expert",
-  "Hype man for job applications", "Passive-aggressive email writer",
-];
-
-function init() {
-  try { apiKey = localStorage.getItem("agentforge-key") || ""; } catch(e) {}
-  if (apiKey) { document.getElementById("keyInput").value = apiKey; document.getElementById("keyDot").classList.add("active"); }
-  try { history = JSON.parse(localStorage.getItem("agentforge-history") || "[]"); renderHistory(); } catch(e) {}
-  updateBtn();
-  setupChips("toneChips", selectedTone, true);
-  setupChips("expertChips", selectedExpert, true);
-  setupChips("powerChips", selectedPowers, false);
-  const strip = document.getElementById("exampleStrip");
-  EXAMPLES.forEach(t => {
-    const b = document.createElement("button"); b.className = "example-chip"; b.textContent = t;
-    b.onclick = () => { document.getElementById("roleInput").value = t; updateBtn(); document.getElementById("roleInput").focus(); };
-    strip.appendChild(b);
-  });
+// ====== CRASH / DRAGON RUSH ======
+let cr=false,cM=1,cP=0,cBt=0,cO=false,cT=0,cPts=[];
+const cCv=document.getElementById('crashCanvas'),cCx=cCv.getContext('2d');
+let cTrail=[];
+function crRz(){cCv.width=cCv.offsetWidth*2;cCv.height=cCv.offsetHeight*2}
+function cDr(){const w=cCv.width,h=cCv.height;cCx.clearRect(0,0,w,h);
+// Stars background
+if(!cCv._stars){cCv._stars=[];for(let i=0;i<60;i++)cCv._stars.push({x:Math.random()*w,y:Math.random()*h,s:Math.random()*2+.5,b:Math.random()})}
+cCv._stars.forEach(s=>{s.b+=0.02;const a=0.3+Math.sin(s.b)*0.25;cCx.beginPath();cCx.arc(s.x,s.y,s.s,0,Math.PI*2);cCx.fillStyle=`rgba(255,200,100,${a})`;cCx.fill()});
+// Dragon position
+const mm=Math.max(2,cM*1.2);const progress=Math.min((cM-1)/(mm-1),1);const dx=w*0.5+Math.sin(Date.now()/300)*20;const dy=h-40-(progress)*(h-80);
+// Add to trail
+if(cr||cO)cTrail.push({x:dx,y:dy,t:Date.now(),a:1});
+cTrail=cTrail.filter(p=>Date.now()-p.t<1500);
+// Draw energy trail
+const tColor=cO?[255,215,0]:cr?[255,107,53]:[255,50,50];
+for(let i=0;i<cTrail.length;i++){const p=cTrail[i];const age=(Date.now()-p.t)/1500;const a=(1-age)*0.6;const sz=8+age*20;
+cCx.beginPath();cCx.arc(p.x+(Math.random()-.5)*10,p.y+(Math.random()-.5)*5,sz,0,Math.PI*2);
+cCx.fillStyle=`rgba(${tColor[0]},${tColor[1]},${tColor[2]},${a*0.3})`;cCx.fill()}
+// Fire particles from dragon
+if(cr){for(let i=0;i<3;i++){const px=dx+(Math.random()-.5)*20;const py=dy+20+Math.random()*15;const ps=4+Math.random()*8;
+cCx.beginPath();cCx.arc(px,py,ps,0,Math.PI*2);const fc=Math.random()>.5?`rgba(255,${~~(Math.random()*100+80)},0,${Math.random()*.5+.2})`:`rgba(255,${~~(Math.random()*200+55)},0,${Math.random()*.3+.1})`;
+cCx.fillStyle=fc;cCx.fill()}}
+// Draw dragon body
+const wingFlap=Math.sin(Date.now()/100)*0.3;const bob=Math.sin(Date.now()/200)*3;const fy=dy+bob;
+cCx.save();cCx.translate(dx,fy);
+// Glow
+const glowSize=20+cM*3;const gCol=cO?'rgba(255,215,0,':'rgba(255,107,53,';
+cCx.shadowColor=cO?'#ffd700':cr?'#ff6b35':'#ff3333';cCx.shadowBlur=glowSize;
+// Wings
+cCx.fillStyle=cr||cO?'rgba(255,80,0,0.8)':'rgba(180,50,50,0.6)';
+cCx.beginPath();cCx.moveTo(0,-5);cCx.quadraticCurveTo(-45,-30+wingFlap*25,-55,-15+wingFlap*30);cCx.quadraticCurveTo(-35,-5,-10,5);cCx.fill();
+cCx.beginPath();cCx.moveTo(0,-5);cCx.quadraticCurveTo(45,-30-wingFlap*25,55,-15-wingFlap*30);cCx.quadraticCurveTo(35,-5,10,5);cCx.fill();
+// Body
+cCx.shadowBlur=glowSize/2;
+const bodyGrad=cCx.createLinearGradient(0,-20,0,20);
+bodyGrad.addColorStop(0,cr||cO?'#ff6b35':'#cc3333');bodyGrad.addColorStop(1,cr||cO?'#cc3300':'#881111');
+cCx.fillStyle=bodyGrad;cCx.beginPath();cCx.ellipse(0,0,14,20,0,0,Math.PI*2);cCx.fill();
+// Head
+cCx.fillStyle=cr||cO?'#ff8844':'#cc4444';cCx.beginPath();cCx.ellipse(0,-22,10,12,0,0,Math.PI*2);cCx.fill();
+// Eyes
+cCx.fillStyle='#fff';cCx.beginPath();cCx.ellipse(-5,-24,3,3.5,0,0,Math.PI*2);cCx.fill();
+cCx.beginPath();cCx.ellipse(5,-24,3,3.5,0,0,Math.PI*2);cCx.fill();
+cCx.fillStyle=cr?'#ffcc00':'#ff0000';cCx.beginPath();cCx.arc(-5,-24,1.5,0,Math.PI*2);cCx.fill();
+cCx.beginPath();cCx.arc(5,-24,1.5,0,Math.PI*2);cCx.fill();
+// Horns
+cCx.strokeStyle='#ffd700';cCx.lineWidth=2.5;cCx.beginPath();cCx.moveTo(-6,-32);cCx.lineTo(-10,-42);cCx.stroke();
+cCx.beginPath();cCx.moveTo(6,-32);cCx.lineTo(10,-42);cCx.stroke();
+// Tail
+cCx.strokeStyle=cr||cO?'#ff6b35':'#cc3333';cCx.lineWidth=4;cCx.beginPath();cCx.moveTo(0,18);cCx.quadraticCurveTo(-15,35+Math.sin(Date.now()/150)*5,-5,45);cCx.stroke();
+// Tail flame
+if(cr){cCx.fillStyle='rgba(255,200,0,0.7)';cCx.beginPath();cCx.arc(-5,47,5+Math.random()*3,0,Math.PI*2);cCx.fill();
+cCx.fillStyle='rgba(255,100,0,0.5)';cCx.beginPath();cCx.arc(-5,50,3+Math.random()*4,0,Math.PI*2);cCx.fill()}
+cCx.shadowBlur=0;cCx.restore();
+// Crash explosion
+if(!cr&&!cO&&cPts.length>2){const age=(Date.now()-cT)/1000-Math.log(cP)/0.4;if(age>=0&&age<1){for(let i=0;i<8;i++){const ang=i/8*Math.PI*2+age*2;const dist=age*80;const ex=dx+Math.cos(ang)*dist;const ey=dy+Math.sin(ang)*dist;const ea=1-age;
+cCx.beginPath();cCx.arc(ex,ey,6+age*10,0,Math.PI*2);cCx.fillStyle=`rgba(255,${~~(50+Math.random()*100)},0,${ea*0.6})`;cCx.fill()}}}
+// Altitude meter on right
+cCx.fillStyle='rgba(255,255,255,0.06)';cCx.fillRect(w-30,40,8,h-80);
+const meterH=(h-80)*progress;cCx.fillStyle=cr||cO?'rgba(255,107,53,0.5)':'rgba(255,50,50,0.4)';cCx.fillRect(w-30,h-40-meterH,8,meterH);
 }
+function cStart(){const b=gb('cBet');if(!b||cr)return;cBt=b;uB(-b);cr=true;cO=false;cM=1;cP=1+Math.random()*.5+Math.pow(Math.random(),2)*15;cPts=[1];cT=Date.now();cTrail=[];cCv._stars=null;document.getElementById('cStartBtn').style.display='none';document.getElementById('cCashBtn').style.display='';document.getElementById('cRes').innerHTML='';document.getElementById('cSt').textContent='⚡ Power level rising...';cTk()}
+function cTk(){if(!cr)return;cM=Math.pow(Math.E,(Date.now()-cT)/1000*.4);cPts.push(cM);const d=document.getElementById('cMult');d.textContent=cM.toFixed(2)+'×';d.style.color=cM<2?'#ff6b35':cM<5?'#ffd700':'#ff0';d.style.textShadow=`0 0 ${Math.min(cM*8,50)}px ${d.style.color}`;cDr();if(cM>=cP){cr=false;d.textContent=cP.toFixed(2)+'×';d.style.color='#ff3333';d.style.textShadow='0 0 30px #ff3333';document.getElementById('cSt').textContent='💥 OVERLOADED!';document.getElementById('cStartBtn').style.display='';document.getElementById('cCashBtn').style.display='none';if(!cO){sR('cRes',false,`💥 Exploded at ${cP.toFixed(2)}× — Lost ${cBt}`);aH('c',false,cP.toFixed(1))}return}requestAnimationFrame(cTk)}
+function cCash(){if(!cr||cO)return;cO=true;const w=~~(cBt*cM);uB(w);sR('cRes',true,`⚡ ${cM.toFixed(2)}× — Won ${w}!`);aH('c',true,cM.toFixed(1));conf();document.getElementById('cSt').textContent='🐉 Energy secured!';document.getElementById('cCashBtn').style.display='none';document.getElementById('cStartBtn').style.display='';cr=false}
 
-document.getElementById("keyInput").addEventListener("input", function() {
-  apiKey = this.value.trim();
-  try { localStorage.setItem("agentforge-key", apiKey); } catch(e) {}
-  document.getElementById("keyDot").classList.toggle("active", !!apiKey);
-  updateBtn();
-});
+// ====== SLOTS / POCKET CREATURES ======
+const SY=['🔥','💧','🌿','⚡','🐲','🪨','🌟'],SM={'🔥':5,'💧':3,'🌿':4,'🪨':3,'⚡':10,'🐲':15,'🌟':20};
+let sOn=false;
+function sSpin(){if(sOn)return;const b=gb('sBet');if(!b)return;sOn=true;uB(-b);document.getElementById('sRes').innerHTML='';document.getElementById('sBtn').disabled=true;
+const rl=[0,1,2].map(i=>document.getElementById('s'+i));rl.forEach(r=>r.classList.add('spin'));
+const rs=[0,1,2].map(()=>{const r=Math.random();return r<.01?'🌟':r<.04?'🐲':r<.1?'⚡':r<.25?'🔥':r<.45?'💧':r<.65?'🌿':'🪨'});
+rs.forEach((s,i)=>{setTimeout(()=>{rl[i].classList.remove('spin');rl[i].textContent=s;if(i===2){let w=0;if(rs[0]===rs[1]&&rs[1]===rs[2]){const m=SM[rs[0]]||3;w=b*m;sR('sRes',true,`${rs.join('')} ×${m}! Caught +${w}!`);conf()}else if(rs[0]===rs[1]||rs[1]===rs[2]||rs[0]===rs[2]){w=~~(b*1.5);sR('sRes',true,`Partial catch! +${w}`)}else sR('sRes',false,`They escaped! -${b}`);if(w>0)uB(w);aH('s',w>0,w>0?'🔮':'✗');sOn=false;document.getElementById('sBtn').disabled=false}},400+i*500)})}
 
-function setupChips(id, arr, single) {
-  document.getElementById(id).querySelectorAll(".mod-chip").forEach(chip => {
-    chip.onclick = () => {
-      const v = chip.dataset.val;
-      if (single) {
-        arr.length = 0;
-        document.getElementById(id).querySelectorAll(".mod-chip").forEach(c => c.classList.remove("selected"));
-        if (!chip.classList.contains("selected")) { arr.push(v); chip.classList.add("selected"); }
-        else { chip.classList.remove("selected"); }
-      } else {
-        const i = arr.indexOf(v);
-        if (i > -1) { arr.splice(i, 1); chip.classList.remove("selected"); }
-        else { arr.push(v); chip.classList.add("selected"); }
-      }
-    };
-  });
-}
+// ====== ROULETTE / NINJA WHEEL ======
+let rC=null,rOn=false;
+const RN=[{n:0,c:'green'},{n:32,c:'red'},{n:15,c:'black'},{n:19,c:'red'},{n:4,c:'black'},{n:21,c:'red'},{n:2,c:'black'},{n:25,c:'red'},{n:17,c:'black'},{n:34,c:'red'},{n:6,c:'black'},{n:27,c:'red'},{n:13,c:'black'},{n:36,c:'red'},{n:11,c:'black'},{n:30,c:'red'},{n:8,c:'black'},{n:23,c:'red'},{n:10,c:'black'},{n:5,c:'red'},{n:24,c:'black'},{n:16,c:'red'},{n:33,c:'black'},{n:1,c:'red'},{n:20,c:'black'},{n:14,c:'red'},{n:31,c:'black'},{n:9,c:'red'},{n:22,c:'black'},{n:18,c:'red'},{n:29,c:'black'},{n:7,c:'red'},{n:28,c:'black'},{n:12,c:'red'},{n:35,c:'black'},{n:3,c:'red'},{n:26,c:'black'}];
+function rSel(c,el){document.querySelectorAll('.rb').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');rC=c}
+function rSpin(){if(rOn||!rC){if(!rC)toast('⚠️ Pick a jutsu!','#ff9600');return}const b=gb('rBet');if(!b)return;rOn=true;uB(-b);document.getElementById('rRes').innerHTML='';document.getElementById('rBtn').disabled=true;document.getElementById('rN').textContent='?';
+const wh=document.getElementById('rW'),ri=~~(Math.random()*RN.length),res=RN[ri],sa=360/RN.length,ta=360-(ri*sa+sa/2),tr=(5+~~(Math.random()*3))*360+ta;
+wh.style.transition='none';wh.style.transform='rotate(0deg)';requestAnimationFrame(()=>requestAnimationFrame(()=>{wh.style.transition='transform 4s cubic-bezier(.2,.8,.3,1)';wh.style.transform=`rotate(${tr}deg)`}));
+setTimeout(()=>{document.getElementById('rN').textContent=res.n;const w=rC===res.c,em=res.c==='red'?'🔥':res.c==='green'?'🍃':'🌑';if(w){const m=res.c==='green'?14:2;const win=b*m;uB(win);sR('rRes',true,`${em} ${res.n} — Jutsu hit! +${win}`);conf()}else sR('rRes',false,`${em} ${res.n} — Jutsu missed! -${b}`);aH('r',w,em);rOn=false;document.getElementById('rBtn').disabled=false},4200)}
 
-function updateBtn() {
-  const btn = document.getElementById("generateBtn");
-  btn.disabled = !document.getElementById("roleInput").value.trim() || !apiKey || isGenerating;
-}
-document.getElementById("roleInput").addEventListener("input", updateBtn);
-document.getElementById("roleInput").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); generate(); } });
+// ====== BLACKJACK / SHADOW LEDGER ======
+let bjDk=[],bjP=[],bjD=[],bjBt=0,bjOn=false;
+const SU=['♠','♥','♦','♣'],RA=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+function mkD(){bjDk=[];for(let s of SU)for(let r of RA)bjDk.push({r,s});for(let i=bjDk.length-1;i>0;i--){const j=~~(Math.random()*(i+1));[bjDk[i],bjDk[j]]=[bjDk[j],bjDk[i]]}}
+function cv(c){return'JQK'.includes(c.r)?10:c.r==='A'?11:parseInt(c.r)}
+function hv(h){let t=0,a=0;for(let c of h){t+=cv(c);if(c.r==='A')a++}while(t>21&&a>0){t-=10;a--}return t}
+function rc(c,fd){if(fd)return'<div class="bj-c fd"></div>';return`<div class="bj-c ${c.s==='♥'||c.s==='♦'?'red':''}">${c.r}<span style="font-size:11px">${c.s}</span></div>`}
+function bjR(rev){document.getElementById('pH').innerHTML=bjP.map(c=>rc(c)).join('');document.getElementById('dH').innerHTML=bjD.map((c,i)=>i===1&&!rev?rc(c,1):rc(c)).join('');document.getElementById('pSc').textContent=hv(bjP);document.getElementById('dSc').textContent=rev?hv(bjD):cv(bjD[0])+'+?'}
+function bjDeal(){const b=gb('bjBet');if(!b||bjOn)return;bjBt=b;uB(-b);mkD();bjP=[bjDk.pop(),bjDk.pop()];bjD=[bjDk.pop(),bjDk.pop()];bjOn=true;document.getElementById('bjA').style.display='flex';document.getElementById('bjDBtn').style.display='none';document.getElementById('bjDb').style.display=B>=bjBt?'':'none';document.getElementById('bjRes').innerHTML='';bjR();if(hv(bjP)===21)bjStand()}
+function bjHit(){if(!bjOn)return;bjP.push(bjDk.pop());document.getElementById('bjDb').style.display='none';bjR();if(hv(bjP)>21)bjEnd()}
+function bjStand(){if(!bjOn)return;bjOn=false;bjR(1);const dr=()=>{if(hv(bjD)<17){bjD.push(bjDk.pop());bjR(1);setTimeout(dr,500)}else bjEnd()};setTimeout(dr,500)}
+function bjDbl(){if(!bjOn||B<bjBt)return;uB(-bjBt);bjBt*=2;bjP.push(bjDk.pop());bjR();hv(bjP)>21?bjEnd():bjStand()}
+function bjEnd(){bjOn=false;bjR(1);const p=hv(bjP),d=hv(bjD);document.getElementById('bjA').style.display='none';document.getElementById('bjDBtn').style.display='';let w=false,m='';if(p>21)m=`💀 Bust! -${bjBt}`;else if(d>21){w=true;uB(bjBt*2);m=`📓 Shinigami falls! +${bjBt*2}`}else if(p>d){w=true;uB(bjBt*2);m=`📓 ${p} vs ${d} — Victory! +${bjBt*2}`}else if(p===d){uB(bjBt);m='⚖️ Draw!';w=true}else m=`💀 ${d} vs ${p} — Defeated! -${bjBt}`;sR('bjRes',w,m);if(w&&p!==d)conf();aH('bj',w,w?'📓':'💀')}
 
-function surpriseMe() {
-  document.getElementById("roleInput").value = SURPRISES[Math.floor(Math.random() * SURPRISES.length)];
-  updateBtn();
-}
+// ====== PLINKO / PIRATE PLUNDER ======
+const plCv=document.getElementById('plinkoCanvas'),plCx=plCv.getContext('2d');
+let plRun=false;
+const PL_R=10,PL_M=[8,4,2,1.5,1,0.5,1,1.5,2,4,8];
+function plRz(){plCv.width=plCv.offsetWidth*2;plCv.height=plCv.offsetHeight*2;plDS()}
+function plDS(){const w=plCv.width,h=plCv.height;plCx.clearRect(0,0,w,h);const gY=h/(PL_R+2),gX=w/(PL_R+3);
+for(let row=0;row<PL_R;row++){const dots=row+3,sx=(w-(dots-1)*gX)/2,y=(row+1)*gY;for(let d=0;d<dots;d++){plCx.beginPath();plCx.arc(sx+d*gX,y,4,0,Math.PI*2);plCx.fillStyle='rgba(0,150,255,.35)';plCx.fill()}}
+const sw=w/PL_M.length,sy=h-gY*.8;for(let i=0;i<PL_M.length;i++){const m=PL_M[i],clr=m>=4?'#ffd700':m>=2?'#0096ff':m>=1?'#40b0ff':'#ff5050';plCx.fillStyle=clr;plCx.globalAlpha=.2;plCx.fillRect(i*sw+2,sy,sw-4,gY*.6);plCx.globalAlpha=1;plCx.fillStyle=clr;plCx.font=`bold ${w>500?'18':'14'}px Fredoka`;plCx.textAlign='center';plCx.fillText(m+'×',i*sw+sw/2,sy+gY*.38)}}
+let plBt=0;
+function plDrop(){if(plRun)return;const b=gb('plBet');if(!b)return;plBt=b;uB(-b);plRun=true;document.getElementById('plBtn').disabled=true;document.getElementById('plRes').innerHTML='';
+const w=plCv.width,h=plCv.height;let bx=w/2+(Math.random()-.5)*40,by=10,vy=0,vx=0;const gY=h/(PL_R+2),gX=w/(PL_R+3),grav=.4;
+function anim(){plDS();plCx.beginPath();plCx.arc(bx,by,10,0,Math.PI*2);plCx.fillStyle='#ffd700';plCx.fill();plCx.shadowColor='#ffd700';plCx.shadowBlur=15;plCx.fill();plCx.shadowBlur=0;
+vy+=grav;by+=vy;bx+=vx;vx*=.98;
+for(let row=0;row<PL_R;row++){const dots=row+3,sx=(w-(dots-1)*gX)/2,py=(row+1)*gY;for(let d=0;d<dots;d++){const px=sx+d*gX,dx=bx-px,dy=by-py,dist=Math.sqrt(dx*dx+dy*dy);if(dist<14){const ang=Math.atan2(dy,dx);bx=px+Math.cos(ang)*14;by=py+Math.sin(ang)*14;vx=Math.cos(ang)*3+(Math.random()-.5)*2;vy=Math.abs(Math.sin(ang))*2;break}}}
+if(bx<10){bx=10;vx=Math.abs(vx)}if(bx>w-10){bx=w-10;vx=-Math.abs(vx)}
+if(by>=h-gY*.5){const sw=w/PL_M.length;let idx=Math.max(0,Math.min(PL_M.length-1,~~(bx/sw)));const mult=PL_M[idx],win=~~(plBt*mult);if(win>0)uB(win);const won=mult>=1;sR('plRes',won,won?`🏴‍☠️ ${mult}× treasure! +${win}`:`🏴‍☠️ ${mult}× — Lost ${plBt-win}`);aH('pl',won,mult+'×');if(mult>=4)conf();plRun=false;document.getElementById('plBtn').disabled=false;return}
+requestAnimationFrame(anim)}anim()}
 
-async function generate() {
-  const role = document.getElementById("roleInput").value.trim();
-  if (!role || !apiKey || isGenerating) return;
-  isGenerating = true;
-  const btn = document.getElementById("generateBtn");
-  btn.innerHTML = '<span class="spinner"></span>FORGING...'; btn.disabled = true;
-  document.getElementById("errorBox").style.display = "none";
-  document.getElementById("outputSection").style.display = "none";
+// ====== MINES / TITAN FIELD ======
+let mG=[],mRv=0,mMn=3,mBt=0,mOn=false,mMl=1;
+function setMn(n){mMn=n;document.querySelectorAll('[id^="mb"]').forEach(b=>{b.style.borderColor='rgba(255,255,255,.08)';b.style.color='var(--dim)'});document.getElementById('mb'+n).style.borderColor='#8c7a3c';document.getElementById('mb'+n).style.color='#8c7a3c'}
+function mStart(){const b=gb('mBet');if(!b||mOn)return;mBt=b;uB(-b);mOn=true;mRv=0;mMl=1;mG=Array(25).fill(false);const mines=[];while(mines.length<mMn){const r=~~(Math.random()*25);if(!mines.includes(r))mines.push(r)}mines.forEach(i=>mG[i]=true);
+document.getElementById('mSBtn').style.display='none';document.getElementById('mCashBtn').style.display='';document.getElementById('mRes').innerHTML='';document.getElementById('mInfo').textContent='⚔️ Scout the field — '+mMn+' Titans lurk!';
+const g=document.getElementById('mGrid');g.innerHTML='';for(let i=0;i<25;i++){const c=document.createElement('div');c.className='mine-cell';c.textContent='🌫️';c.onclick=()=>mRev(i,c);g.appendChild(c)}}
+function mRev(i,el){if(!mOn||el.classList.contains('rv'))return;el.classList.add('rv');if(mG[i]){el.classList.add('bomb');el.textContent='👹';mOn=false;document.getElementById('mCashBtn').style.display='none';document.getElementById('mSBtn').style.display='';document.getElementById('mInfo').textContent='👹 TITAN ATTACK!';
+document.querySelectorAll('.mine-cell').forEach((c,j)=>{if(mG[j]&&!c.classList.contains('rv')){c.classList.add('rv','bomb');c.textContent='👹'}});
+sR('mRes',false,`👹 Devoured! -${mBt}`);aH('m',false,'👹')}else{el.classList.add('gem');el.textContent='📦';mRv++;mMl=+(1+mRv*mMn/(25-mMn)*.5).toFixed(2);document.getElementById('mInfo').textContent=`📦 ×${mMl} — ${mRv} supplies found`;
+if(mRv===25-mMn){mOn=false;const w=~~(mBt*mMl);uB(w);document.getElementById('mCashBtn').style.display='none';document.getElementById('mSBtn').style.display='';sR('mRes',true,`🏰 All clear! ×${mMl} +${w}`);aH('m',true,'🏰');conf()}}}
+function mCash(){if(!mOn)return;mOn=false;const w=~~(mBt*mMl);uB(w);document.getElementById('mCashBtn').style.display='none';document.getElementById('mSBtn').style.display='';document.getElementById('mInfo').textContent='🏰 Safe retreat!';
+document.querySelectorAll('.mine-cell').forEach((c,j)=>{if(mG[j]&&!c.classList.contains('rv')){c.classList.add('rv','bomb');c.textContent='👹'}});
+sR('mRes',true,`🏰 ×${mMl} +${w}`);aH('m',true,mMl+'×');if(mMl>=2)conf()}
 
-  const mods = [];
-  if (selectedTone.length) mods.push("Tone: " + selectedTone.join(", "));
-  if (selectedExpert.length) mods.push("Expertise level: " + selectedExpert.join(", "));
-  if (selectedPowers.length) mods.push("Behaviors: " + selectedPowers.join(", "));
+// ====== DICE / BREATH DICE ======
+let dCh='over',dRn=false;
+function dSel(c,el){dCh=c;document.querySelectorAll('.dc').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');dUpd()}
+function dUpd(){const v=parseInt(document.getElementById('dSlider').value);document.getElementById('dTgt').textContent=v;const ch=dCh==='over'?(100-v)/100:v/100;const ml=Math.max(1.01,+(0.96/ch).toFixed(2));document.getElementById('dOdds').textContent=`×${ml} • ${~~(ch*100)}% chance`}
+function dRoll(){if(dRn)return;const b=gb('dBet');if(!b)return;dRn=true;document.getElementById('dBtn').disabled=true;document.getElementById('dRes').innerHTML='';
+const tgt=parseInt(document.getElementById('dSlider').value),ch=dCh==='over'?(100-tgt)/100:tgt/100,ml=Math.max(1.01,+(0.96/ch).toFixed(2));
+uB(-b);const res=~~(Math.random()*100)+1;let fr=0;
+const an=()=>{document.getElementById('dNum').textContent=~~(Math.random()*100)+1;fr++;if(fr<20)setTimeout(an,50);else{document.getElementById('dNum').textContent=res;const won=dCh==='over'?res>tgt:res<tgt;if(won){const w=~~(b*ml);uB(w);sR('dRes',true,`🌊 ${res} — ×${ml} +${w}!`);if(ml>=3)conf()}else sR('dRes',false,`🌊 ${res} — -${b}`);aH('d',won,res.toString());dRn=false;document.getElementById('dBtn').disabled=false}};an()}
+dUpd();
 
-  const prompt = `You are an expert prompt engineer. Generate a complete, production-ready system prompt for an AI agent with this role:
+// ====== TOWER / HERO TOWER ======
+let tFl=0,tMl=1,tBt=0,tOn=false,tTr=[];const T_F=8;
+function tStart(){const b=gb('tBet');if(!b||tOn)return;tBt=b;uB(-b);tOn=true;tFl=0;tMl=1;tTr=[];for(let f=0;f<T_F;f++)tTr.push(~~(Math.random()*3));
+document.getElementById('tSBtn').style.display='none';document.getElementById('tCashBtn').style.display='';document.getElementById('tRes').innerHTML='';document.getElementById('tInfo').textContent='🦸 Pick a door on Floor 1!';
+const g=document.getElementById('tGrid');g.innerHTML='';for(let f=T_F-1;f>=0;f--){const lbl=document.createElement('div');lbl.className='tfl';lbl.textContent=`Floor ${f+1} — ×${(1.5**(f+1)).toFixed(1)}`;g.appendChild(lbl);const fl=document.createElement('div');fl.className='tower-floor';fl.id='tf'+f;for(let d=0;d<3;d++){const dr=document.createElement('div');dr.className='tower-door';dr.textContent=f===0?'🚪':'🔒';dr.onclick=()=>tPick(f,d);fl.appendChild(dr)}g.appendChild(fl)}
+document.querySelectorAll('#tf0 .tower-door').forEach(d=>{d.classList.add('cur');d.textContent='🚪'})}
+function tPick(f,d){if(!tOn||f!==tFl)return;const safe=tTr[f]!==d;document.getElementById('tf'+f).querySelectorAll('.tower-door').forEach((dr,i)=>{dr.classList.add('rv');if(tTr[f]===i){dr.classList.add('trap');dr.textContent='💀'}else{dr.classList.add('safe');dr.textContent='⭐'}});
+if(!safe){tOn=false;document.getElementById('tCashBtn').style.display='none';document.getElementById('tSBtn').style.display='';document.getElementById('tInfo').textContent='💀 Villain attack!';sR('tRes',false,`💀 Floor ${f+1} trap! -${tBt}`);aH('t',false,'💀')}else{tFl++;tMl=+(1.5**tFl).toFixed(1);if(tFl>=T_F){tOn=false;const w=~~(tBt*tMl);uB(w);document.getElementById('tCashBtn').style.display='none';document.getElementById('tSBtn').style.display='';document.getElementById('tInfo').textContent='🏆 NUMBER ONE HERO!';sR('tRes',true,`🏆 ×${tMl} +${w}!`);aH('t',true,'🏆');conf()}else{document.getElementById('tInfo').textContent=`🦸 Floor ${tFl+1} — Current: ×${tMl}`;document.querySelectorAll('#tf'+tFl+' .tower-door').forEach(d=>{d.classList.add('cur');d.textContent='🚪'})}}}
+function tCash(){if(!tOn||tFl===0)return;tOn=false;const w=~~(tBt*tMl);uB(w);document.getElementById('tCashBtn').style.display='none';document.getElementById('tSBtn').style.display='';document.getElementById('tInfo').textContent='🏆 Victory claimed!';
+for(let f=tFl;f<T_F;f++){document.getElementById('tf'+f).querySelectorAll('.tower-door').forEach((dr,i)=>{dr.classList.add('rv');if(tTr[f]===i){dr.classList.add('trap');dr.textContent='💀'}else{dr.classList.add('safe');dr.textContent='⭐'}})}
+sR('tRes',true,`🏆 ×${tMl} +${w}`);aH('t',true,tMl+'×');if(tMl>=3)conf()}
 
-"${role}"
+// ====== FLIP / FATE DUEL ======
+let fCh=null,fOn=false;
+function fSel(c,el){fCh=c;document.querySelectorAll('.fc').forEach(b=>b.classList.remove('sel'));el.classList.add('sel')}
+function fFlip(){if(fOn||!fCh){if(!fCh)toast('⚠️ Choose Light or Dark!','#9b59b6');return}const b=gb('fBet');if(!b)return;fOn=true;uB(-b);document.getElementById('fBtn').disabled=true;document.getElementById('fRes').innerHTML='';
+const res=Math.random()<.5?'heads':'tails',inner=document.getElementById('fInner');inner.classList.remove('flipping');void inner.offsetWidth;inner.classList.add('flipping');
+setTimeout(()=>{inner.style.transform=res==='tails'?'rotateY(180deg)':'rotateY(0deg)';inner.classList.remove('flipping');const won=fCh===res;if(won){const w=b*2;uB(w);sR('fRes',true,`${res==='heads'?'👑 Light':'💀 Dark'} wins! +${w}`);conf()}else sR('fRes',false,`${res==='heads'?'👑 Light':'💀 Dark'} wins — -${b}`);aH('f',won,res==='heads'?'👑':'💀');fOn=false;document.getElementById('fBtn').disabled=false},850)}
 
-${mods.length ? "Additional traits:\n" + mods.join("\n") : ""}
-
-RULES FOR THE SYSTEM PROMPT YOU GENERATE:
-- Start with "You are [role description]."
-- Include: personality traits, communication style, expertise areas, boundaries/limitations
-- Include specific behavioral instructions (what to do, what NOT to do)
-- Include 2-3 example catchphrases or signature phrases the character would use
-- Include edge case handling (off-topic questions, things outside expertise, etc.)
-- Make it vivid, specific, and memorable — not generic corporate fluff
-- The persona should feel like a REAL character with quirks and opinions
-- Keep it between 200-500 words
-- Output ONLY the system prompt text. No explanations, no markdown fences, no "Here's the prompt:" prefix. Just the raw prompt ready to paste.`;
-
-  try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true",
-      },
-      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1500, messages: [{ role: "user", content: prompt }] }),
-    });
-    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error?.message || "API error " + res.status); }
-    const data = await res.json();
-    currentPrompt = (data.content || []).map(b => b.text || "").join("").trim();
-    currentRole = role;
-    showOutput(role, currentPrompt);
-    history.unshift({ role, prompt: currentPrompt, tone: [...selectedTone], powers: [...selectedPowers], date: new Date().toISOString() });
-    if (history.length > 20) history = history.slice(0, 20);
-    try { localStorage.setItem("agentforge-history", JSON.stringify(history)); } catch(e) {}
-    renderHistory();
-  } catch (err) {
-    const box = document.getElementById("errorBox");
-    box.textContent = "⚠ " + (err.message.includes("401") ? "Invalid API key. Check your key above." : err.message);
-    box.style.display = "block";
-  }
-  isGenerating = false; btn.innerHTML = "FORGE AGENT →"; updateBtn();
-}
-
-function showOutput(role, prompt) {
-  document.getElementById("outputSection").style.display = "block";
-  document.getElementById("outputName").textContent = role;
-  document.getElementById("outputBody").textContent = prompt;
-  document.getElementById("outputDate").textContent = new Date().toLocaleDateString();
-  document.getElementById("outputTokens").textContent = "~" + Math.round(prompt.split(/\s+/).length * 1.3) + " tokens";
-  document.getElementById("outputSection").scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-function copyPrompt() {
-  navigator.clipboard.writeText(currentPrompt).then(() => {
-    const b = document.getElementById("copyBtn"); b.textContent = "✓ Copied!"; b.classList.add("copied");
-    setTimeout(() => { b.textContent = "📋 Copy"; b.classList.remove("copied"); }, 2000);
-  });
-}
-
-function downloadPrompt() {
-  const slug = currentRole.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40);
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([currentPrompt], { type: "text/plain" }));
-  a.download = "agent-" + slug + ".txt"; a.click();
-}
-
-function sharePrompt() {
-  const text = "🕵 Just forged an AI agent:\n\n\"" + currentRole + "\"\n\nBuilt with Agent Forge";
-  if (navigator.share) { navigator.share({ title: "Agent Forge", text }).catch(() => {}); }
-  else {
-    navigator.clipboard.writeText(text + "\n\n" + currentPrompt).then(() => {
-      const b = document.getElementById("shareBtn"); b.textContent = "✓ Copied!";
-      setTimeout(() => { b.textContent = "Share"; }, 2000);
-    });
-  }
-}
-
-function renderHistory() {
-  const s = document.getElementById("historySection"), g = document.getElementById("historyGrid");
-  if (!history.length) { s.style.display = "none"; return; }
-  s.style.display = "block"; g.innerHTML = "";
-  history.forEach(h => {
-    const c = document.createElement("div"); c.className = "history-card";
-    c.onclick = () => { currentPrompt = h.prompt; currentRole = h.role; showOutput(h.role, h.prompt); };
-    let tags = "";
-    if (h.tone?.length) tags += h.tone.map(t => '<span class="h-tag">' + t + "</span>").join("");
-    if (h.powers?.length) tags += h.powers.slice(0, 2).map(p => '<span class="h-tag">' + p + "</span>").join("");
-    c.innerHTML = '<div class="h-role">' + h.role + '</div><div class="h-preview">' + h.prompt.slice(0, 100) + "...</div>"
-      + (tags ? '<div class="h-tags">' + tags + "</div>" : "");
-    g.appendChild(c);
-  });
-}
-
-init();
+// ====== INIT ======
+(function(){try{const s=localStorage.getItem('cp3');if(s){B=parseInt(s);uB(0)}}catch(e){}
+crRz();window.addEventListener('resize',()=>{crRz();if(document.getElementById('pg-plinko').classList.contains('active'))plRz()});
+cDr();plRz();
+mkP('pt-crash',['#ff6b35','#ffd700','#ff3300']);
+mkP('pt-slots',['#dc1e1e','#ff4444','#880000']);
+mkP('pt-roulette',['#ff9600','#ffb84d','#cc7700']);
+mkP('pt-bj',['#b40032','#800020','#ff0040']);
+mkP('pt-pl',['#0096ff','#40b0ff','#004488']);
+mkP('pt-mn',['#8c7a3c','#6b5b2a','#b8a050']);
+mkP('pt-dc',['#00cccc','#008888','#40e0e0']);
+mkP('pt-tw',['#6432c8','#8050e0','#4020a0']);
+mkP('pt-fl',['#9b59b6','#6a0dad','#c77dff'])})();
 </script>
 </body>
 </html>
